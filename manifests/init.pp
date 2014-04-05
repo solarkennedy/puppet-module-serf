@@ -15,6 +15,16 @@
 #
 # [*config_hash*]
 #   Use this to populate the JSON config file for serf.
+#
+# [*install_method*]
+#   Defaults to `url` but can be `package` if you want to install via a system package.
+# 
+# [*package_name*]
+#   Only valid when the install_method == package. Defaults to `serf`.
+# 
+# [*package_ensure*]
+#   Only valid when the install_method == package. Defaults to `present`.
+# 
 # === Examples
 #
 #  You can invoke this module with simply:
@@ -43,33 +53,13 @@ class serf (
   $arch                 = $serf::params::arch,
   $init_script_url      = $serf::params::init_script_url,
   $init_script_path     = $serf::params::init_script_path,
+  $install_method       = $serf::params::install_method,
+  $package_name         = $serf::params::package_name,
+  $package_ensure       = $serf::params::package_ensure,
   $config_hash          = {}
 ) inherits serf::params {
 
-  $download_url = "https://dl.bintray.com/mitchellh/serf/${version}_linux_${arch}.zip"
-
-  staging::file { 'serf.zip':
-    source => $download_url,
-  } ->
-
-  staging::extract { 'serf.zip':
-    target  => $bin_dir,
-    creates => "${bin_dir}/serf",
-  } ->
-
-  file { [$handlers_dir, '/etc/serf']:
-    ensure  => directory,
-  } ->
-
-  staging::file { $init_script_path:
-    source => $init_script_url,
-    target => $init_script_path,
-  } ->
-
-  file { $init_script_path:
-    mode    => '0755',
-    notify  => Service['serf'],
-  }
+  class { 'serf::install': } ~>
 
   file { 'config.json':
     path   => "/etc/serf/config.json",
@@ -81,4 +71,5 @@ class serf (
     enable => true,
     ensure => running,
   }
+
 }

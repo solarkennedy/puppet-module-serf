@@ -3,6 +3,10 @@
 #
 class serf::params {
 
+  $install_method = 'url'
+  $package_name   = 'serf'
+  $package_ensure = 'present'
+
   if $::kernel != 'Linux' {
     fail("Unsupported kernel \"${::kernel}\". Module currently only supports Linux. Pull requests welcome! https://github.com/justinclayton/puppet-module-serf/pull_requests")
   }
@@ -24,4 +28,5 @@ class serf::params {
     }
     default: { fail("Unsupported OS family \"${::osfamily}\". Module only supports redhat and debian. Serf supports others, but module is untested.") }
   }
+
 }

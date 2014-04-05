@@ -21,7 +21,7 @@ describe 'serf', :type => :class do
       :architecture => 'i386',
       :osfamily     => 'redhat'
     }}
-    context '32-bit' do
+    context '32-bit by default' do
       let(:facts) {{
         :kernel       => 'Linux',
         :architecture => 'i386',
@@ -37,7 +37,7 @@ describe 'serf', :type => :class do
         })
       end
     end
-    context '64-bit' do
+    context '64-bit by default' do
       let(:facts) {{
         :kernel       => 'Linux',
         :architecture => 'x86_64',
@@ -62,6 +62,26 @@ describe 'serf', :type => :class do
       it 'should fail with an error' do
         expect { subject }.to raise_error(Puppet::Error,/Unsupported kernel architecture \"fuuuu\"/)
       end
+    end
+    context 'When requesting to install via a package with defaults' do
+      let(:params) {{
+        :version      => '0.4.1',
+        :bin_dir      => '/usr/local/bin',
+        :config_hash  => $config_hash_param_value,
+        :install_method => 'package'
+      }}
+      it { should contain_package('serf').with(:ensure => 'present') }
+    end
+    context 'When requesting to install via a custom package and version' do
+      let(:params) {{
+        :version        => '0.4.1',
+        :bin_dir        => '/usr/local/bin',
+        :config_hash    => $config_hash_param_value,
+        :install_method => 'package',
+        :package_ensure => 'specific_release',
+        :package_name   => 'custom_serf_package'
+      }}
+      it { should contain_package('custom_serf_package').with(:ensure => 'specific_release') }
     end
     it 'should manage configs' do
       should contain_file('config.json').with({
